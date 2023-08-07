@@ -6,6 +6,10 @@ on:
     branches:
     - main 
 
+env:
+  Azure_WebApp_Name: my-wapp
+  Azure_WebApp_Package_Path: "./publish"
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -23,4 +27,11 @@ jobs:
       run: dotnet build ./CurrentTimeService.sln --configuration Release --no-restore
 
     - name: Publish
-      run: dotnet publish ./CurrentTimeService.sln --configuration Release --no-build
+      run: dotnet publish ./CurrentTimeService.sln --configuration Release --no-build --output '${{ env.Azure_WebApp_Package_Path }}'
+
+    - name: Deployment
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{env.Azure_WebApp_Name}}
+        publish-profile: ${{secrets.AZURE_PUBLISH_PROFILE}}
+        package: "${{ env.Azure_WebApp_Package_Path }}"
